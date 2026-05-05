@@ -37,7 +37,6 @@ install_tensorflow() {
   # Install TensorFlow 2.2.
   echo "Installing TensorFlow 2.2"
   pip3 install --upgrade tensorflow==2.2.0
-  pip3 install tensorflow-addons==0.11.2
   local exit_code=$?
   handle_exit_code ${exit_code} "Unable to install Tensorflow 2.2."
   echo "Installing TensorFlow 2.2 for GPU"
@@ -49,7 +48,7 @@ install_tensorflow() {
 install_tf_slim() {
   # Install TF-Slim from source.
   echo "Installing TF-Slim from source: ${git_repo}"
-  git clone -b v1.1.0 ${tf_slim_git_repo}
+  git clone ${tf_slim_git_repo}
   local exit_code=$?
   handle_exit_code ${exit_code} "Unable to clone TF-Slim repository ${tf_slim_git_repo}."
   pushd . > /dev/null

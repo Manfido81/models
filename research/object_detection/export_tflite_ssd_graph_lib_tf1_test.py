@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 # Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,9 +72,6 @@ class FakeModel(model.DetectionModel):
     pass
 
   def restore_map(self, checkpoint_path, from_detection_checkpoint):
-    pass
-
-  def restore_from_objects(self, fine_tune_checkpoint_type):
     pass
 
   def loss(self, prediction_dict, true_image_shapes):
@@ -418,7 +416,7 @@ class ExportTfliteGraphTest(tf.test.TestCase):
     tflite_graph_file = self._export_graph_with_postprocessing_op(
         pipeline_config)
     self.assertTrue(os.path.exists(tflite_graph_file))
-    self.assertEqual(1, mock_get.call_count)
+    mock_get.assert_called_once()
 
 
 if __name__ == '__main__':

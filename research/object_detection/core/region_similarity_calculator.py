@@ -79,39 +79,6 @@ class IouSimilarity(RegionSimilarityCalculator):
     return box_list_ops.iou(boxlist1, boxlist2)
 
 
-class DETRSimilarity(RegionSimilarityCalculator):
-  """Class to compute similarity for the Detection Transformer model.
-
-  This class computes pairwise DETR similarity between two BoxLists using a
-  weighted combination of GIOU, classification scores, and the L1 loss.
-  """
-
-  def __init__(self, l1_weight=5, giou_weight=2):
-    super().__init__()
-    self.l1_weight = l1_weight
-    self.giou_weight = giou_weight
-
-  def _compare(self, boxlist1, boxlist2):
-    """Compute pairwise DETR similarity between the two BoxLists.
-
-    Args:
-      boxlist1: BoxList holding N groundtruth boxes.
-      boxlist2: BoxList holding M predicted boxes.
-
-    Returns:
-      A tensor with shape [N, M] representing pairwise DETR similarity scores.
-    """
-    groundtruth_labels = boxlist1.get_field(fields.BoxListFields.classes)
-    predicted_labels = boxlist2.get_field(fields.BoxListFields.classes)
-    classification_scores = tf.matmul(groundtruth_labels,
-                                      predicted_labels,
-                                      transpose_b=True)
-    loss = self.l1_weight * box_list_ops.l1(
-        boxlist1, boxlist2) + self.giou_weight * (1 - box_list_ops.giou(
-            boxlist1, boxlist2)) - classification_scores
-    return -loss
-
-
 class NegSqDistSimilarity(RegionSimilarityCalculator):
   """Class to compute similarity based on the squared distance metric.
 

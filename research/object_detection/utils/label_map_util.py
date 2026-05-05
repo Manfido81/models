@@ -130,18 +130,6 @@ def convert_label_map_to_categories(label_map,
     if item.id not in list_of_ids_already_added:
       list_of_ids_already_added.append(item.id)
       category = {'id': item.id, 'name': name}
-      if item.HasField('frequency'):
-        if item.frequency == string_int_label_map_pb2.LVISFrequency.Value(
-            'FREQUENT'):
-          category['frequency'] = 'f'
-        elif item.frequency == string_int_label_map_pb2.LVISFrequency.Value(
-            'COMMON'):
-          category['frequency'] = 'c'
-        elif item.frequency == string_int_label_map_pb2.LVISFrequency.Value(
-            'RARE'):
-          category['frequency'] = 'r'
-      if item.HasField('instance_count'):
-        category['instance_count'] = item.instance_count
       if item.keypoints:
         keypoints = {}
         list_of_keypoint_ids = []
@@ -156,15 +144,11 @@ def convert_label_map_to_categories(label_map,
   return categories
 
 
-def load_labelmap(path, validator=None):
+def load_labelmap(path):
   """Loads label map proto.
 
   Args:
     path: path to StringIntLabelMap proto text file.
-    validator: Handle for a function that takes the loaded label map as input
-      and validates it. The validator is expected to raise ValueError for an
-      invalid label map. If None, uses the default validator.
-
   Returns:
     a StringIntLabelMapProto
   """
@@ -175,16 +159,13 @@ def load_labelmap(path, validator=None):
       text_format.Merge(label_map_string, label_map)
     except text_format.ParseError:
       label_map.ParseFromString(label_map_string)
-  if validator is None:
-    validator = _validate_label_map
-  validator(label_map)
+  _validate_label_map(label_map)
   return label_map
 
 
 def get_label_map_dict(label_map_path_or_proto,
                        use_display_name=False,
-                       fill_in_gaps_and_background=False,
-                       validator=None):
+                       fill_in_gaps_and_background=False):
   """Reads a label map and returns a dictionary of label names to id.
 
   Args:
@@ -196,9 +177,6 @@ def get_label_map_dict(label_map_path_or_proto,
     'background' class and will be added if it is missing. All other missing
     ids in range(1, max(id)) will be added with a dummy class name
     ("class_<id>") if they are missing.
-    validator: Handle for a function that takes the loaded label map as input
-      and validates it. The validator is expected to raise ValueError for an
-      invalid label map. If None, uses the default validator.
 
   Returns:
     A dictionary mapping label names to id.
@@ -210,9 +188,7 @@ def get_label_map_dict(label_map_path_or_proto,
   if isinstance(label_map_path_or_proto, string_types):
     label_map = load_labelmap(label_map_path_or_proto)
   else:
-    if validator is None:
-      validator = _validate_label_map
-    validator(label_map_path_or_proto)
+    _validate_label_map(label_map_path_or_proto)
     label_map = label_map_path_or_proto
 
   label_map_dict = {}
@@ -244,42 +220,8 @@ def get_label_map_dict(label_map_path_or_proto,
   return label_map_dict
 
 
-def get_keypoint_label_map_dict(label_map_path_or_proto):
-  """Reads a label map and returns a dictionary of keypoint names to ids.
-
-  Note that the keypoints belong to different classes will be merged into a
-  single dictionary. It is expected that there is no duplicated keypoint names
-  or ids from different classes.
-
-  Args:
-    label_map_path_or_proto: path to StringIntLabelMap proto text file or the
-      proto itself.
-
-  Returns:
-    A dictionary mapping keypoint names to the keypoint id (not the object id).
-
-  Raises:
-    ValueError: if there are duplicated keyoint names or ids.
-  """
-  if isinstance(label_map_path_or_proto, string_types):
-    label_map = load_labelmap(label_map_path_or_proto)
-  else:
-    label_map = label_map_path_or_proto
-
-  label_map_dict = {}
-  for item in label_map.item:
-    for kpts in item.keypoints:
-      if kpts.label in label_map_dict.keys():
-        raise ValueError('Duplicated keypoint label: %s' % kpts.label)
-      if kpts.id in label_map_dict.values():
-        raise ValueError('Duplicated keypoint ID: %d' % kpts.id)
-      label_map_dict[kpts.label] = kpts.id
-  return label_map_dict
-
-
 def get_label_map_hierarchy_lut(label_map_path_or_proto,
-                                include_identity=False,
-                                validator=None):
+                                include_identity=False):
   """Reads a label map and returns ancestors and descendants in the hierarchy.
 
   The function returns the ancestors and descendants as separate look up tables
@@ -292,9 +234,6 @@ def get_label_map_hierarchy_lut(label_map_path_or_proto,
     include_identity: Boolean to indicate whether to include a class element
       among its ancestors and descendants. Setting this will result in the lut
       diagonal being set to 1.
-    validator: Handle for a function that takes the loaded label map as input
-      and validates it. The validator is expected to raise ValueError for an
-      invalid label map. If None, uses the default validator.
 
   Returns:
     ancestors_lut: Look up table with the ancestors.
@@ -303,9 +242,7 @@ def get_label_map_hierarchy_lut(label_map_path_or_proto,
   if isinstance(label_map_path_or_proto, string_types):
     label_map = load_labelmap(label_map_path_or_proto)
   else:
-    if validator is None:
-      validator = _validate_label_map
-    validator(label_map_path_or_proto)
+    _validate_label_map(label_map_path_or_proto)
     label_map = label_map_path_or_proto
 
   hierarchy_dict = {

@@ -1,109 +1,32 @@
-<div align="center">
-  <img src="https://storage.googleapis.com/tf_model_garden/tf_model_garden_logo.png">
-</div>
-
-[![Python](https://img.shields.io/pypi/pyversions/tensorflow.svg?style=plastic)](https://badge.fury.io/py/tensorflow)
-[![tf-models-official PyPI](https://badge.fury.io/py/tf-models-official.svg)](https://badge.fury.io/py/tf-models-official)
-
+![Logo](https://storage.googleapis.com/model_garden_artifacts/TF_Model_Garden.png)
 
 # Welcome to the Model Garden for TensorFlow
 
-The TensorFlow Model Garden is a repository with a number of different
-implementations of state-of-the-art (SOTA) models and modeling solutions for
-TensorFlow users. We aim to demonstrate the best practices for modeling so that
-TensorFlow users can take full advantage of TensorFlow for their research and
-product development.
-
-To improve the transparency and reproducibility of our models, training logs on
-[TensorBoard.dev](https://tensorboard.dev) are also provided for models to the
-extent possible though not all models are suitable.
+The TensorFlow Model Garden is a repository with a number of different implementations of state-of-the-art (SOTA) models and modeling solutions for TensorFlow users. We aim to demonstrate the best practices for modeling so that TensorFlow users
+can take full advantage of TensorFlow for their research and product development.
 
 | Directory | Description |
 |-----------|-------------|
-| [official](official) | • A collection of example implementations for SOTA models using the latest TensorFlow 2's high-level APIs<br />• Officially maintained, supported, and kept up to date with the latest TensorFlow 2 APIs by TensorFlow<br />• Reasonably optimized for fast performance while still being easy to read<br /> For more details on the capabilities, check the guide on the [Model-garden](https://www.tensorflow.org/tfmodels)|
+| [official](official) | • A collection of example implementations for SOTA models using the latest TensorFlow 2's high-level APIs<br />• Officially maintained, supported, and kept up to date with the latest TensorFlow 2 APIs by TensorFlow<br />• Reasonably optimized for fast performance while still being easy to read |
 | [research](research) | • A collection of research model implementations in TensorFlow 1 or 2 by researchers<br />• Maintained and supported by researchers |
 | [community](community) | • A curated list of the GitHub repositories with machine learning models and implementations powered by TensorFlow 2 |
-| [orbit](orbit) | • A flexible and lightweight library that users can easily use or fork when writing customized training loop code in TensorFlow 2.x. It seamlessly integrates with `tf.distribute` and supports running on different device types (CPU, GPU, and TPU). |
 
-## Installation
+## [Announcements](https://github.com/tensorflow/models/wiki/Announcements)
 
-To install the current release of tensorflow-models, please follow any one of the methods described below.
+| Date | News |
+|------|------|
+| June 17, 2020 | [Context R-CNN: Long Term Temporal Context for Per-Camera Object Detection](https://github.com/tensorflow/models/tree/master/research/object_detection#june-17th-2020) released
+| May 21, 2020 | [Unifying Deep Local and Global Features for Image Search (DELG)](https://github.com/tensorflow/models/tree/master/research/delf#delg) code released
+| May 19, 2020 | [MobileDets: Searching for Object Detection Architectures for Mobile Accelerators](https://github.com/tensorflow/models/tree/master/research/object_detection#may-19th-2020) released
+| May 7, 2020 | [MnasFPN with MobileNet-V2 backbone](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md#mobile-models) released for object detection
+| May 1, 2020 | [DELF: DEep Local Features](https://github.com/tensorflow/models/tree/master/research/delf) updated to support TensorFlow 2.1
+| March 31, 2020 | [Introducing the Model Garden for TensorFlow 2](https://blog.tensorflow.org/2020/03/introducing-model-garden-for-tensorflow-2.html) ([Tweet](https://twitter.com/TensorFlow/status/1245029834633297921)) |
 
-#### Method 1: Install the TensorFlow Model Garden pip package
+## [Milestones](https://github.com/tensorflow/models/milestones)
 
-<details>
-
-**tf-models-official** is the stable Model Garden package. Please check out the [releases](https://github.com/tensorflow/models/releases) to see what are available modules.
-
-pip3 will install all models and dependencies automatically.
-
-```shell
-pip3 install tf-models-official
-```
-
-Please check out our examples:
-  - [basic library import](https://github.com/tensorflow/models/blob/master/tensorflow_models/tensorflow_models_pypi.ipynb)
-  - [nlp model building](https://github.com/tensorflow/models/blob/master/docs/nlp/index.ipynb)
-to learn how to use a PIP package.
-
-Note that **tf-models-official** may not include the latest changes in the master branch of this
-github repo. To include latest changes, you may install **tf-models-nightly**,
-which is the nightly Model Garden package created daily automatically.
-
-```shell
-pip3 install tf-models-nightly
-```
-
-</details>
-
-
-#### Method 2: Clone the source
-
-<details>
-
-1. Clone the GitHub repository:
-
-```shell
-git clone https://github.com/tensorflow/models.git
-```
-
-2. Add the top-level ***/models*** folder to the Python path.
-
-```shell
-export PYTHONPATH=$PYTHONPATH:/path/to/models
-```
-
-If you are using in a Windows environment, you may need to use the following command with PowerShell:
-```shell
-$env:PYTHONPATH += ":\path\to\models"
-```
-
-If you are using a Colab notebook, please set the Python path with os.environ.
-
-```python
-import os
-os.environ['PYTHONPATH'] += ":/path/to/models"
-```
-
-3. Install other dependencies
-
-```shell
-pip3 install --user -r models/official/requirements.txt
-```
-
-Finally, if you are using nlp packages, please also install
-**tensorflow-text-nightly**:
-
-```shell
-pip3 install tensorflow-text-nightly
-```
-
-</details>
-
-
-## Announcements
-
-Please check [this page](https://github.com/tensorflow/models/wiki/Announcements) for recent announcements.
+| Date | Milestone |
+|------|-----------|
+| July 7, 2020 | [![GitHub milestone](https://img.shields.io/github/milestones/progress/tensorflow/models/1)](https://github.com/tensorflow/models/milestone/1) |
 
 ## Contributions
 
@@ -114,17 +37,3 @@ If you want to contribute, please review the [contribution guidelines](https://g
 ## License
 
 [Apache License 2.0](LICENSE)
-
-## Citing TensorFlow Model Garden
-
-If you use TensorFlow Model Garden in your research, please cite this repository.
-
-```
-@misc{tensorflowmodelgarden2020,
-  author = {Hongkun Yu, Chen Chen, Xianzhi Du, Yeqing Li, Abdullah Rashwan, Le Hou, Pengchong Jin, Fan Yang,
-            Frederick Liu, Jaeyoun Kim, and Jing Li},
-  title = {{TensorFlow Model Garden}},
-  howpublished = {\url{https://github.com/tensorflow/models}},
-  year = {2020}
-}
-```

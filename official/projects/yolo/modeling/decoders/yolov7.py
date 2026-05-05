@@ -1,4 +1,4 @@
-# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2026 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ E-ELAN is proposed in YOLOv7 paper:
     arXiv:2207.02696
 """
 
-import tensorflow as tf
+import tensorflow as tf, tf_keras
 
 from official.modeling import hyperparams
 from official.projects.yolo.modeling.layers import nn_blocks
@@ -38,9 +38,9 @@ from official.vision.modeling.decoders import factory
 # Required block functions for YOLOv7 decoder familes.
 _BLOCK_FNS = {
     'convbn': nn_blocks.ConvBN,
-    'upsample2d': tf.keras.layers.UpSampling2D,
-    'maxpool2d': tf.keras.layers.MaxPooling2D,
-    'concat': tf.keras.layers.Concatenate,
+    'upsample2d': tf_keras.layers.UpSampling2D,
+    'maxpool2d': tf_keras.layers.MaxPooling2D,
+    'concat': tf_keras.layers.Concatenate,
     'sppcspc': nn_blocks.SPPCSPC,
     'repconv': nn_blocks.RepConv,
 }
@@ -90,6 +90,93 @@ _BLOCK_SPEC_SCHEMAS = {
         'is_output',
     ],
 }
+
+# Define specs for YOLOv7-pico variant. It is recommended to use together with
+# YOLOv7-pico backbone.
+_YoloV7Pico = [
+    ['convbn', '4', 1, 1, 16, False],
+    ['convbn', -1, 1, 1, 16, False],
+
+    ['convbn', -1, 1, 1, 8, False],
+    ['upsample2d', -1, 2, 'nearest', False],
+    ['convbn', '3', 1, 1, 8, False],
+    ['concat', [-1, -2], -1, False],
+    ['convbn', -1, 1, 1, 8, False],
+    ['convbn', -1, 1, 1, 8, False],
+
+    ['convbn', -1, 3, 2, 16, False],
+    ['concat', [-1, 1], -1, False],
+    ['convbn', -1, 1, 1, 16, False],
+
+    ['convbn', -1, 3, 2, 32, False],
+    ['convbn', -1, 1, 1, 32, False],
+
+    ['convbn', 7, 1, 1, 8, True],
+    ['convbn', 10, 1, 1, 16, True],
+    ['convbn', 12, 1, 1, 32, True],
+]
+
+# Define specs for YOLOv7-nano variant. It is recommended to use together with
+# YOLOv7-nano backbone.
+_YoloV7Nano = [
+    ['convbn', -1, 1, 1, 64, False],
+    ['convbn', -2, 1, 1, 64, False],
+    ['maxpool2d', -1, 5, 1, 'same', False],
+    ['maxpool2d', -2, 9, 1, 'same', False],
+    ['maxpool2d', -3, 13, 1, 'same', False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 64, False],
+    ['concat', [-1, -7], -1, False],
+    ['convbn', -1, 1, 1, 64, False],  # 8
+
+    ['convbn', -1, 1, 1, 32, False],
+    ['upsample2d', -1, 2, 'nearest', False],
+    ['convbn', '4', 1, 1, 32, False],  # route from backbone P4
+    ['concat', [-1, -2], -1, False],
+
+    ['convbn', -1, 1, 1, 16, False],
+    ['convbn', -2, 1, 1, 16, False],
+    ['convbn', -1, 3, 1, 16, False],
+    ['convbn', -1, 3, 1, 16, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 32, False],  # 18
+
+    ['convbn', -1, 1, 1, 16, False],
+    ['upsample2d', -1, 2, 'nearest', False],
+    ['convbn', '3', 1, 1, 16, False],  # route from backbone P3
+    ['concat', [-1, -2], -1, False],
+
+    ['convbn', -1, 1, 1, 8, False],
+    ['convbn', -2, 1, 1, 8, False],
+    ['convbn', -1, 3, 1, 8, False],
+    ['convbn', -1, 3, 1, 8, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 16, False],  # 28
+
+    ['convbn', -1, 3, 2, 32, False],
+    ['concat', [-1, 18], -1, False],
+
+    ['convbn', -1, 1, 1, 16, False],
+    ['convbn', -2, 1, 1, 16, False],
+    ['convbn', -1, 3, 1, 16, False],
+    ['convbn', -1, 3, 1, 16, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 32, False],  # 36
+
+    ['convbn', -1, 3, 2, 64, False],
+    ['concat', [-1, 8], -1, False],
+
+    ['convbn', -1, 1, 1, 32, False],
+    ['convbn', -2, 1, 1, 32, False],
+    ['convbn', -1, 3, 1, 32, False],
+    ['convbn', -1, 3, 1, 32, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 64, False],  # 44
+
+    ['convbn', 28, 1, 1, 32, True],
+    ['convbn', 36, 1, 1, 64, True],
+    ['convbn', 44, 1, 1, 128, True],
+]
 
 # Define specs for YOLOv7-tiny variant. It is recommended to use together with
 # YOLOv7-tiny backbone.
@@ -298,13 +385,15 @@ _YoloV7X = [
 
 # Aggregates all variants for YOLOv7 decoders.
 DECODERS = {
+    'yolov7-nano': _YoloV7Nano,
+    'yolov7-pico': _YoloV7Pico,
     'yolov7-tiny': _YoloV7Tiny,
     'yolov7': _YoloV7,
     'yolov7x': _YoloV7X,
 }
 
 
-class YoloV7(tf.keras.Model):
+class YoloV7(tf_keras.Model):
   """YOLOv7 decoder architecture."""
 
   def __init__(
@@ -334,10 +423,10 @@ class YoloV7(tf.keras.Model):
       use_separable_conv: `bool` wether to use separable convs.
       kernel_initializer: a `str` for kernel initializer of convolutional
         layers.
-      kernel_regularizer: a `tf.keras.regularizers.Regularizer` object for
+      kernel_regularizer: a `tf_keras.regularizers.Regularizer` object for
         Conv2D. Default to None.
       bias_initializer: a `str` for bias initializer of convolutional layers.
-      bias_regularizer: a `tf.keras.regularizers.Regularizer` object for Conv2D.
+      bias_regularizer: a `tf_keras.regularizers.Regularizer` object for Conv2D.
         Default to None.
       **kwargs: Additional keyword arguments to be passed.
     """
@@ -396,7 +485,7 @@ class YoloV7(tf.keras.Model):
   def _generate_inputs(self, input_specs):
     inputs = {}
     for level, input_shape in input_specs.items():
-      inputs[level] = tf.keras.layers.Input(shape=input_shape[1:])
+      inputs[level] = tf_keras.layers.Input(shape=input_shape[1:])
     return inputs
 
   def _group_layer_inputs(self, from_index, inputs, outputs):
@@ -437,10 +526,10 @@ class YoloV7(tf.keras.Model):
 
 @factory.register_decoder_builder('yolov7')
 def build_yolov7(
-    input_specs: tf.keras.layers.InputSpec,
+    input_specs: tf_keras.layers.InputSpec,
     model_config: hyperparams.Config,
-    l2_regularizer: tf.keras.regularizers.Regularizer = None,
-) -> tf.keras.Model:  # pytype: disable=annotation-type-mismatch  # typed-keras
+    l2_regularizer: tf_keras.regularizers.Regularizer = None,
+) -> tf_keras.Model:  # pytype: disable=annotation-type-mismatch  # typed-keras
   """Builds YOLOv7 decoder."""
   decoder_config = model_config.decoder
   norm_activation_config = model_config.norm_activation

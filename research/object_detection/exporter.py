@@ -101,21 +101,15 @@ def rewrite_nn_resize_op(is_quantized=False):
         'FakeQuantWithMinMaxVars' if is_quantized else '*')
     stack_1_pattern = graph_matcher.OpTypePattern(
         'Pack', inputs=[input_pattern, input_pattern], ordered_inputs=False)
-    reshape_1_pattern = graph_matcher.OpTypePattern(
-        'Reshape', inputs=[stack_1_pattern, 'Const'], ordered_inputs=False)
     stack_2_pattern = graph_matcher.OpTypePattern(
-        'Pack',
-        inputs=[reshape_1_pattern, reshape_1_pattern],
-        ordered_inputs=False)
-    reshape_2_pattern = graph_matcher.OpTypePattern(
+        'Pack', inputs=[stack_1_pattern, stack_1_pattern], ordered_inputs=False)
+    reshape_pattern = graph_matcher.OpTypePattern(
         'Reshape', inputs=[stack_2_pattern, 'Const'], ordered_inputs=False)
     consumer_pattern1 = graph_matcher.OpTypePattern(
-        'Add|AddV2|Max|Mul',
-        inputs=[reshape_2_pattern, '*'],
+        'Add|AddV2|Max|Mul', inputs=[reshape_pattern, '*'],
         ordered_inputs=False)
     consumer_pattern2 = graph_matcher.OpTypePattern(
-        'StridedSlice',
-        inputs=[reshape_2_pattern, '*', '*', '*'],
+        'StridedSlice', inputs=[reshape_pattern, '*', '*', '*'],
         ordered_inputs=False)
 
     def replace_matches(consumer_pattern):
@@ -125,17 +119,16 @@ def rewrite_nn_resize_op(is_quantized=False):
       for match in matcher.match_graph(tf.get_default_graph()):
         match_counter += 1
         projection_op = match.get_op(input_pattern)
-        reshape_2_op = match.get_op(reshape_2_pattern)
+        reshape_op = match.get_op(reshape_pattern)
         consumer_op = match.get_op(consumer_pattern)
         nn_resize = tf.image.resize_nearest_neighbor(
             projection_op.outputs[0],
-            reshape_2_op.outputs[0].shape.dims[1:3],
+            reshape_op.outputs[0].shape.dims[1:3],
             align_corners=False,
-            name=os.path.split(reshape_2_op.name)[0] +
-            '/resize_nearest_neighbor')
+            name=os.path.split(reshape_op.name)[0] + '/resize_nearest_neighbor')
 
         for index, op_input in enumerate(consumer_op.inputs):
-          if op_input == reshape_2_op.outputs[0]:
+          if op_input == reshape_op.outputs[0]:
             consumer_op._update_input(index, nn_resize)  # pylint: disable=protected-access
             break
 
@@ -177,7 +170,7 @@ def replace_variable_values_with_moving_averages(graph,
   with graph.as_default():
     variable_averages = tf.train.ExponentialMovingAverage(0.0)
     ema_variables_to_restore = variable_averages.variables_to_restore()
-    ema_variables_to_restore = config_util.remove_unnecessary_ema(
+    ema_variables_to_restore = config_util.remove_unecessary_ema(
         ema_variables_to_restore, no_ema_collection)
     with tf.Session() as sess:
       read_saver = tf.train.Saver(ema_variables_to_restore)

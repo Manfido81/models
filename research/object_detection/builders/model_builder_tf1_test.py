@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 # Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,9 +37,6 @@ class ModelBuilderTF1Test(model_builder_test.ModelBuilderTest):
 
   def ssd_feature_extractors(self):
     return model_builder.SSD_FEATURE_EXTRACTOR_CLASS_MAP
-
-  def get_override_base_feature_extractor_hyperparams(self, extractor_type):
-    return extractor_type in {'ssd_inception_v2', 'ssd_inception_v3'}
 
   def faster_rcnn_feature_extractors(self):
     return model_builder.FASTER_RCNN_FEATURE_EXTRACTOR_CLASS_MAP

@@ -60,6 +60,7 @@ https://arxiv.org/abs/2103.14259)) which gives more gains on mAP.
 * Akhil Chinnakotla ([@GitHub The-Indian-Chinna](https://github.com/The-Indian-Chinna))
 * Tristan Yan ([@GitHub Tyan3001](https://github.com/Tyan3001))
 * Naveen Vivek ([@GitHub naveen-vivek](https://github.com/naveen-vivek))
+* Jacob Zietek ([@GitHub jacob-zietek](https://github.com/jacob-zietek))
 
 ### YOLOv7
 
@@ -92,6 +93,8 @@ connected to a new, more powerful backbone if a person chose to.
 | Yolo-v7          |
 | Yolo-v7-tiny     |
 | Yolo-v7X         |
+| Yolo-v7-nano     |
+| Yolo-v7-pico     |
 
 ## Requirements
 [![TensorFlow 2.12](https://img.shields.io/badge/TensorFlow-2.12-FF6F00?logo=tensorflow)](https://github.com/tensorflow/tensorflow/releases/tag/v2.11.0)

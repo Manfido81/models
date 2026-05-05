@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 # Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,8 +85,7 @@ def build(input_reader_config):
     elif input_type == input_reader_pb2.InputType.Value('TF_SEQUENCE_EXAMPLE'):
       decoder = tf_sequence_example_decoder.TfSequenceExampleDecoder(
           label_map_proto_file=label_map_proto_file,
-          load_context_features=input_reader_config.load_context_features,
-          load_context_image_ids=input_reader_config.load_context_image_ids)
+          load_context_features=input_reader_config.load_context_features)
       return decoder.decode(string_tensor)
     raise ValueError('Unsupported input_type.')
   raise ValueError('Unsupported input_reader_config.')

@@ -3,36 +3,84 @@
 Instance segmentation models for identification of recyclables on conveyor
 belts.
 
-Note: These are demo models built on limited datasets. If you’re interested in
-updated versions of the models, or in using models trained on specific
-materials, reach out to waste-innovation-external@google.com
+We provide retraining and fine-tuning utilities, but if you're interested in
+partnering more closely with us reach out to
+waste-innovation-external@google.com
 
 ## Overview
 
-CircularNet is built using Mask RCNN, which is a deep learning model for
-instance image segmentation, where the goal is to assign instance level labels
-(e.g. person1, person2, cat) to every pixel in an input image.
-
-Mask RCNN algorithm is available in the TensorFlow Model Garden which is a
-repository with a number of different implementations of state-of-the-art models
-and modeling solutions for TensorFlow users.
+Circularnet is built using RF-DETR, a vision transformer model that includes
+both object detection and instance segmentation, which is a deep learning model
+for instance image segmentation, where the goal is to assign instance level
+labels (e.g. person1, person2, cat) to every pixel in an input image.
 
 ## Model Categories
 
--   Material Type - Identifies the high level material type (e.g. plastic, paper
-    etc) of an object
--   Material Form - Categorizes objects based on the form factor (e.g. cup,
+-   **Material Type:** Identifies the material type (metal, paper etc) of an
+    object. For plastic, resin types are also identified (HDPE, PET, LDPE, etc).
+-   **Material Form:** Categorizes objects based on the form factor (cup,
     bottle, bag etc)
--   Plastic Type - Identifies the plastic resin type of the object (e.g. PET,
-    HDPE, LDPE, etc)
+-   **Example inference label:** Plastics-PET_Bottle
 
-## Model paths in GCP buckets
+### Latest model
+### Single unified model that performs material type and form detections
 
-| Model categories | Model backbone | Model type | GCP bucket path |
+Model categories | Model backbone | Model type  | GCP bucket path |
 | ------ | ------ | ----- | ------ |
-| Material Model | Resnet | saved model & TFLite | [click here](https://storage.googleapis.com/tf_model_garden/vision/waste_identification_ml/material_model.zip) |
-| Material Form model | Resnet | saved model & TFLite | [click here](https://storage.googleapis.com/tf_model_garden/vision/waste_identification_ml/material_form_model.zip) |
-|Plastic model | Resnet| saved model & TFLite | [click here](https://storage.googleapis.com/tf_model_garden/vision/waste_identification_ml/plastic_types_model.zip) |
+Material Type & Form | Vision transformer | onnx model | [click here](https://storage.googleapis.com/tf_model_garden/vision/waste_identification_ml/CircularNet_Segmentation_Model_v1.zip)
+
+## Full Documentation
+
+The full documentation, covering everything from how to choose and install
+a camera to how to prepare and make use of the model is **[here](circularnet-docs/content/_index.md).**
+Below, we also provide a quicker guide for running inference using a GCP VM,
+assuming you already have a working camera taking pictures.
+
+## End to End Cloud Deployment Guide
+
+End to end deployment involves three key steps:
+
+1. **GCP GPU VM creation**
+
+2. **Code configuration**
+
+3. **Results analysis**
+
+We will go through each one of them in details below
+
+#### [A] Prerequisite - Create VM instance:
+Create a Google cloud account and a T4 GPU enabled VM:
+
+- [Create VM in GCP Cloud](circularnet-docs/content/deploy-cn/before-you-begin.md)
+
+#### [B] Code Setup - Clone and start the pipeline
+
+Run the following commands mentioned in each step on the **SSH-in-browser**
+window of your VM instance in Google Cloud
+
+Step 1:
+
+- [Clone the repository](circularnet-docs/content/deploy-cn/clone-repo.md)
+
+Step 2:
+
+- [Start the server](circularnet-docs/content/deploy-cn/start-server.md)
+
+Step 3:
+
+- [Run the prediction Pipeline](circularnet-docs/content/deploy-cn/start-client.md)
+
+For more details: [Click Here](circularnet-docs/content/analyze-data/prediction-pipeline-in-cloud.md)
+
+#### [C] Setup Dashboard - Visualize results
+
+For reporting purposes and to analyze image categories, we need to set up and
+connect looker dashboard with BigQuery table:
+
+-  [Prepare and analyze images](circularnet-docs/content/view-data/configure-dashboard.md)
 
 ## Authors and Maintainers
-- Umair Sabir
+Umair Sabir - Primary developer
+Vinit Ganorkar - Primary developer
+Ethan Steele - Collaborator
+Sujit Sanjeev - Product Manager

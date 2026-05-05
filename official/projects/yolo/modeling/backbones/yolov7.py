@@ -1,4 +1,4 @@
-# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2026 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ E-ELAN is proposed in YOLOv7 paper:
     arXiv:2207.02696
 """
 
-import tensorflow as tf
+import tensorflow as tf, tf_keras
 
 from official.modeling import hyperparams
 from official.projects.yolo.modeling.layers import nn_blocks
@@ -38,8 +38,8 @@ from official.vision.modeling.backbones import factory
 # Required block functions for YOLOv7 backbone familes.
 _BLOCK_FNS = {
     'convbn': nn_blocks.ConvBN,
-    'maxpool2d': tf.keras.layers.MaxPooling2D,
-    'concat': tf.keras.layers.Concatenate,
+    'maxpool2d': tf_keras.layers.MaxPooling2D,
+    'concat': tf_keras.layers.Concatenate,
 }
 
 # Names for key arguments needed by each block function.
@@ -67,6 +67,72 @@ _BLOCK_SPEC_SCHEMAS = {
         'is_output',
     ]
 }
+
+# Define YOLOv7-pico variant.
+_YoloV7Pico = [
+    ['convbn', -1, 3, 2, 8, False],  # 0-P1/2
+
+    ['convbn', -1, 3, 2, 16, False],  # 1-P2/4
+
+    ['convbn', -1, 1, 1, 8, False],
+    ['convbn', -2, 1, 1, 8, False],
+    ['convbn', -1, 3, 1, 8, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 16, False],  # 7
+
+    ['maxpool2d', -1, 2, 2, 'same', False],  # 8-P3/8
+    ['convbn', -1, 1, 1, 16, False],
+    ['convbn', -2, 1, 1, 16, False],
+    ['convbn', -1, 3, 1, 16, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 32, True],  # 14
+
+    ['maxpool2d', -1, 2, 2, 'same', False],  # 15-P4/16
+    ['convbn', -1, 1, 1, 32, False],
+    ['convbn', -2, 1, 1, 32, False],
+    ['convbn', -1, 3, 1, 32, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 64, True],  # 21
+]
+
+# Define YOLOv7-nano variant.
+
+_YoloV7Nano = [
+    ['convbn', -1, 3, 2, 8, False],  # 0-P1/2
+
+    ['convbn', -1, 3, 2, 16, False],  # 1-P2/4
+
+    ['convbn', -1, 1, 1, 8, False],
+    ['convbn', -2, 1, 1, 8, False],
+    ['convbn', -1, 3, 1, 8, False],
+    ['convbn', -1, 3, 1, 8, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 16, False],  # 7
+
+    ['maxpool2d', -1, 2, 2, 'same', False],  # 8-P3/8
+    ['convbn', -1, 1, 1, 16, False],
+    ['convbn', -2, 1, 1, 16, False],
+    ['convbn', -1, 3, 1, 16, False],
+    ['convbn', -1, 3, 1, 16, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 32, True],  # 14
+
+    ['maxpool2d', -1, 2, 2, 'same', False],  # 15-P4/16
+    ['convbn', -1, 1, 1, 32, False],
+    ['convbn', -2, 1, 1, 32, False],
+    ['convbn', -1, 3, 1, 32, False],
+    ['convbn', -1, 3, 1, 32, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 64, True],  # 21
+
+    ['maxpool2d', -1, 2, 2, 'same', False],  # 22-P5/32
+    ['convbn', -1, 1, 1, 64, False],
+    ['convbn', -2, 1, 1, 64, False],
+    ['convbn', -1, 3, 1, 64, False],
+    ['convbn', -1, 3, 1, 64, False],
+    ['concat', [-1, -2, -3, -4], -1, False],
+    ['convbn', -1, 1, 1, 128, True],  # 28
+]
 
 # Define YOLOv7-tiny variant.
 _YoloV7Tiny = [
@@ -241,19 +307,21 @@ _YoloV7X = [
 
 # Aggregates all variants for YOLOv7 backbones.
 BACKBONES = {
+    'yolov7-nano': _YoloV7Nano,
+    'yolov7-pico': _YoloV7Pico,
     'yolov7-tiny': _YoloV7Tiny,
     'yolov7': _YoloV7,
     'yolov7x': _YoloV7X,
 }
 
 
-class YoloV7(tf.keras.Model):
+class YoloV7(tf_keras.Model):
   """YOLOv7 backbone architecture."""
 
   def __init__(
       self,
       model_id='yolov7',
-      input_specs=tf.keras.layers.InputSpec(shape=[None, None, None, 3]),
+      input_specs=tf_keras.layers.InputSpec(shape=[None, None, None, 3]),
       use_sync_bn=False,
       norm_momentum=0.99,
       norm_epsilon=0.001,
@@ -267,17 +335,17 @@ class YoloV7(tf.keras.Model):
 
     Args:
       model_id: a `str` represents the model variants.
-      input_specs: a `tf.keras.layers.InputSpec` of the input tensor.
+      input_specs: a `tf_keras.layers.InputSpec` of the input tensor.
       use_sync_bn: if set to `True`, use synchronized batch normalization.
       norm_momentum: a `float` of normalization momentum for the moving average.
       norm_epsilon: a small `float` added to variance to avoid dividing by zero.
       activation: a `str` name of the activation function.
       kernel_initializer: a `str` for kernel initializer of convolutional
         layers.
-      kernel_regularizer: a `tf.keras.regularizers.Regularizer` object for
+      kernel_regularizer: a `tf_keras.regularizers.Regularizer` object for
         Conv2D. Default to None.
       bias_initializer: a `str` for bias initializer of convolutional layers.
-      bias_regularizer: a `tf.keras.regularizers.Regularizer` object for Conv2D.
+      bias_regularizer: a `tf_keras.regularizers.Regularizer` object for Conv2D.
         Default to None.
       **kwargs: Additional keyword arguments to be passed.
     """
@@ -296,7 +364,7 @@ class YoloV7(tf.keras.Model):
     self._bias_initializer = bias_initializer
     self._bias_regularizer = bias_regularizer
 
-    inputs = tf.keras.layers.Input(shape=input_specs.shape[1:])
+    inputs = tf_keras.layers.Input(shape=input_specs.shape[1:])
 
     block_specs = BACKBONES[model_id.lower()]
     outputs = []
@@ -363,11 +431,11 @@ class YoloV7(tf.keras.Model):
 
 @factory.register_backbone_builder('yolov7')
 def build_yolov7(
-    input_specs: tf.keras.layers.InputSpec,
+    input_specs: tf_keras.layers.InputSpec,
     backbone_config: hyperparams.Config,
     norm_activation_config: hyperparams.Config,
-    l2_regularizer: tf.keras.regularizers.Regularizer = None,
-) -> tf.keras.Model:  # pytype: disable=annotation-type-mismatch  # typed-keras
+    l2_regularizer: tf_keras.regularizers.Regularizer = None,
+) -> tf_keras.Model:  # pytype: disable=annotation-type-mismatch  # typed-keras
   """Builds YOLOv7."""
 
   assert backbone_config.type == 'yolov7', (

@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 # Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -483,7 +484,7 @@ class FasterRCNNMetaArchTest(
               'mask_predictions':
                   mask_predictions,
               'rpn_features_to_crop':
-                  [rpn_features_to_crop]
+                  rpn_features_to_crop
           }, true_image_shapes)
       self.assertIn('detection_features', detections)
       return (detections['detection_boxes'], detections['detection_scores'],

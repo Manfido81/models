@@ -1,4 +1,4 @@
-# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2026 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,8 @@ def generate_image_np(height: int,
   """Returns a fake numpy image matrix array."""
   return np.reshape(
       np.mod(np.arange(height * width * num_channels), 255).astype(np.uint8),
-      newshape=(height, width, num_channels))
+      (height, width, num_channels),
+  )
 
 
 def generate_normalized_boxes_np(num_boxes: int) -> np.ndarray:
@@ -82,15 +83,17 @@ def generate_instance_masks_np(height: int,
   box_heights = boxes_np[:, 3].astype(int) - ymins
 
   for i, (x, y, w, h) in enumerate(zip(xmins, ymins, box_widths, box_heights)):
-    instance_masks_np[i, y:y + h, x:x + w, :] = np.reshape(
-        np.mod(np.arange(h * w), 2).astype(np.uint8), newshape=(h, w, 1))
+    instance_masks_np[i, y:y + h, x:x + w, :] = np.reshape(np.mod(np.arange(h * w), 2).astype(np.uint8), (h, w, 1))
   return instance_masks_np
 
 
 def generate_semantic_mask_np(height: int, width: int,
                               num_classes: int) -> np.ndarray:
   """Returns a fake numpy semantic mask array."""
-  return generate_image_np(height, width, num_channels=1) % num_classes
+  out = generate_image_np(height, width, num_channels=1)
+  if np.iinfo(out.dtype).max > num_classes:
+    out = out % num_classes
+  return out
 
 
 def generate_panoptic_masks_np(

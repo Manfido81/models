@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -244,6 +245,17 @@ class SSDResNetV1FpnKerasFeatureExtractor(
         last_feature_map = layer(last_feature_map)
       feature_maps.append(last_feature_map)
     return feature_maps
+
+  def restore_from_classification_checkpoint_fn(self, feature_extractor_scope):
+    """Returns a map for restoring from an (object-based) checkpoint.
+
+    Args:
+      feature_extractor_scope: A scope name for the feature extractor (unused).
+
+    Returns:
+      A dict mapping keys to Keras models
+    """
+    return {'feature_extractor': self.classification_backbone}
 
 
 class SSDResNet50V1FpnKerasFeatureExtractor(

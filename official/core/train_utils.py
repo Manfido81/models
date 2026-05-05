@@ -1,4 +1,4 @@
-# Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2026 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ from absl import logging
 import gin
 import numpy as np
 import orbit
-import tensorflow as tf
+import tensorflow as tf, tf_keras
 
 # pylint: disable=g-direct-tensorflow-import
 from tensorflow.python.framework import ops
@@ -243,7 +243,7 @@ class BestCheckpointExporter:
 
 def create_optimizer(task: base_task.Task,
                      params: config_definitions.ExperimentConfig
-                     ) -> tf.keras.optimizers.Optimizer:
+                     ) -> tf_keras.optimizers.Optimizer:
   """A create optimizer util to be backward compatability with new args."""
   if 'dp_config' in inspect.signature(task.create_optimizer).parameters:
     dp_config = None
@@ -292,6 +292,7 @@ class ParseConfigOptions:
   tpu: str = ''
   tf_data_service: str = ''
   params_override: str = ''
+  strict_override: bool = True
 
   def __contains__(self, name):
     return name in dataclasses.asdict(self)
@@ -330,9 +331,13 @@ class ExperimentParser:
 
   def parse_config_file(self, params):
     """Override the configs of params from the config_file."""
+    is_strict = True
+    if isinstance(self._flags_obj, ParseConfigOptions):
+      is_strict = self._flags_obj.strict_override
     for config_file in self._flags_obj.config_file or []:
       params = hyperparams.override_params_dict(
-          params, config_file, is_strict=True)
+          params, config_file, is_strict=is_strict
+      )
     return params
 
   def parse_runtime(self, params):
@@ -363,14 +368,28 @@ class ExperimentParser:
     return params
 
   def parse_params_override(self, params):
+    """Overrides params from the --params_override flag.
+
+    Args:
+      params: A ParamsDict object to be overridden.
+
+    Returns:
+      The overridden ParamsDict object.
+    """
     # Get the second level of override from `--params_override`.
     # `--params_override` is typically used as a further override over the
     # template. For example, one may define a particular template for training
     # ResNet50 on ImageNet in a config file and pass it via `--config_file`,
     # then define different learning rates and pass it via `--params_override`.
     if self._flags_obj.params_override:
+      is_strict = True
+      if isinstance(self._flags_obj, ParseConfigOptions):
+        is_strict = self._flags_obj.strict_override
       params = hyperparams.override_params_dict(
-          params, self._flags_obj.params_override, is_strict=True)
+          params,
+          self._flags_obj.params_override,
+          is_strict=is_strict,
+      )
     return params
 
 
@@ -471,7 +490,7 @@ def remove_ckpts(model_dir):
     tf.io.gfile.remove(file_to_remove)
 
 
-def write_model_params(model: Union[tf.Module, tf.keras.Model],
+def write_model_params(model: Union[tf.Module, tf_keras.Model],
                        output_path: str) -> None:
   """Writes the model parameters and shapes to a file.
 
@@ -489,7 +508,7 @@ def write_model_params(model: Union[tf.Module, tf.keras.Model],
 
 
 def try_count_params(
-    model: Union[tf.Module, tf.keras.Model],
+    model: Union[tf.Module, tf_keras.Model],
     trainable_only: bool = False):
   """Count the number of parameters if model is possible.
 
@@ -519,7 +538,7 @@ def try_count_params(
   return total_params
 
 
-def try_count_flops(model: Union[tf.Module, tf.keras.Model],
+def try_count_flops(model: Union[tf.Module, tf_keras.Model],
                     inputs_kwargs: Optional[Dict[str, Any]] = None,
                     output_path: Optional[str] = None):
   """Counts and returns model FLOPs.

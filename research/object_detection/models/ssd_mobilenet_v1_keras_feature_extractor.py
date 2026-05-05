@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 # Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -162,3 +163,14 @@ class SSDMobileNetV1KerasFeatureExtractor(
         'Conv2d_13_pointwise': image_features[1]})
 
     return list(feature_maps.values())
+
+  def restore_from_classification_checkpoint_fn(self, feature_extractor_scope):
+    """Returns a map for restoring from an (object-based) checkpoint.
+
+    Args:
+      feature_extractor_scope: A scope name for the feature extractor (unused).
+
+    Returns:
+      A dict mapping keys to Keras models
+    """
+    return {'feature_extractor': self.classification_backbone}
